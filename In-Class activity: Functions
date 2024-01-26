@@ -1,0 +1,176 @@
+---
+title: "02 - In-class activity on Functions"
+author: "Kayla Tabra"
+date: "2024-01-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Functional programming in R
+
+**Function definition**
+- Functions are created using the function() keyword.
+- Inside the parentheses, specify the function's arguments (inputs).
+- The body of the function contains the code that executes when the function is called.
+- The function returns a value using the return() statement (optional).
+
+
+```{r, eval=FALSE}
+add_numbers <- function(x, y) {
+  result <- x + y
+  return(result)
+}
+```
+
+**Function calling**
+
+- Call a function by using its name followed by parentheses.
+- Inside the parentheses, provide values for the arguments (if any).
+- The function executes its code and returns a value (if specified).
+
+```{r, eval=FALSE}
+sum <- add_numbers(5, 3)  # Calling the function
+print(sum)  # Output: 8
+```
+
+- **Benefits of Using Functions:**    
+  + Reusability: Write code once and use it multiple times.    
+  + Modularity: Break down complex tasks into smaller, manageable functions.    
+  + Abstraction: Hide implementation details, making code easier to understand and maintain.    
+  + Organization: Improve code structure and readability.     
+  + Testing: Test functions independently to ensure correctness.
+  
+## Questions: 
+
+#### Q1. Create a function to create a normalized values vector from the numeric vector var1 
+```{r}
+var1 <- c(28, 80, 22, 9, 5, 38, 16, 4, 86, 90)
+
+z_score <- function(x) {
+  (x - mean(x)) / sd(x)
+}
+
+zValues <- z_score(var1)
+```
+
+#### Q2. Fetch the price column from the diamonds dataset and create a max-min normalized values on price column.
+```{r}
+# x - min(x) / max(x) - min(x) 
+min_max <- function(x) {
+  (x-min(x)) / (max(x) - min(x))
+}
+min_max(c(1, 2, 3, 4))
+v <- min_max(diamonds[, 7])
+head(v, 5)
+```
+
+#### Q3. Write a function to create new variables based on existing one (discounted price).
+- Give a 20% discount to premium diamonds, 15% discount for good and very good diamonds, 10% discount to Fair and no discount for Ideal diamonds. 
+
+```{r}
+discounted_price <- function(price, cut) {
+  ifelse(cut == "Premium", price * 0.80, 
+         ifelse(cut %in% c("Good", "Very Good"), price * 0.85, 
+                ifelse(cut == "Fair", price * 0.90, 
+                       price)))
+}
+diamonds$new_price <- discounted_price(diamonds$price, diamonds$cut)
+head(diamonds)
+
+```
+
+#### Q4. Develop an R function that takes a specified diamond cut type as input and utilizes the diamonds dataset to generate a scatter plot visualizing the correlation between carat size and price for diamonds belonging to that specific cut.
+
+```{r}
+visualize_dmds <- function(data, cut_type) {
+  diamonds_filtered <- data[data$cut == cut_type, ]
+  plot(diamonds_filtered$carat, diamonds_filtered$price,
+       main = paste("Carat vs Price for", cut_type, "Cut Diamonds"),
+       xlab = "Carat", ylab = "Price")
+}
+
+# Example usage
+visualize_dmds(diamonds, "Premium")
+visualize_dmds(diamonds, "Ideal")
+visualize_dmds(diamonds, "Good")
+```
+
+
+### Apply class functions.
+
+- Apply a function to elements: They all apply a specified function to elements of an object (list, vector, matrix, etc.).
+- Simplify repetitive tasks: They automate actions that would otherwise require loops, making code more concise and readable.
+
+
+- Apply:
+  - Array-oriented: Works with arrays (matrices, multidimensional arrays).
+  - Syntax: apply(array, margin, function)
+  - Margins: Specifies the dimension to apply the function over (1 for rows, 2 for columns, etc.).
+  - Returns: An array with the same dimensions as the input, containing the results of applying the function.
+
+- lapply:
+  - List-oriented: Works with lists and vectors.
+  - Syntax: lapply(list, function)
+  - Returns: A list with the same length as the input, containing the function's results for each element.
+
+- sapply:
+
+  - Simplified output: Similar to lapply, but tries to simplify the result into a vector or matrix if possible.
+  - Syntax: sapply(list, function)
+  - Returns: A vector, matrix, or list, depending on the output of the function and whether simplification is successful.
+  
+```{r}
+# Sample data
+data <- list(a = 1:5, b = c("x", "y", "z"), c = matrix(1:9, nrow = 3))
+
+# Calculate the mean of each list element
+mean_results <- lapply(data, mean)  # Returns a list
+print(mean_results)
+
+# Same as above, but try to simplify the output
+simplified_results <- sapply(data, mean)  # Returns a vector
+print(simplified_results)
+
+```
+
+- Choose apply for array-based operations.
+- Choose lapply when you always want a list output.
+- Choose sapply for potentially simplified output.
+- For more complex data structures, explore vapply, tapply, mapply, and others.
+
+#### Q5. Extract all the numeric columns of the diamonds dataframe. sapply and is.numeric can help to fetch the columns. 
+
+```{r}
+numeric_columns <- sapply(diamonds, is.numeric)
+diamonds_numeric <- diamonds[, numeric_columns]
+str(diamonds_numeric)
+```
+
+
+#### Q6. Calculate the weighted mean, variance, and standard deviation of two vectors. 
+```{r}
+calculate_weighted_stats <- function(data_vector, weights_vector) {
+  if (length(data_vector) != length(weights_vector)) {
+    stop("Data and weights vectors must be of the same length")
+  }
+
+  weighted_mean <- sum(data_vector * weights_vector) / sum(weights_vector)
+  weighted_mean_deviation <- data_vector - weighted_mean
+  weighted_variance <- sum(weights_vector * weighted_mean_deviation^2) / sum(weights_vector)
+  weighted_sd <- sqrt(weighted_variance)
+
+  return(list(mean = weighted_mean, variance = weighted_variance, sd = weighted_sd))
+}
+
+data_vector <- c(1, 2, 3, 4, 5)
+weights_vector <- c(0.2, 0.1, 0.3, 0.2, 0.2)
+
+results <- calculate_weighted_stats(data_vector, weights_vector)
+results
+```
+
+
+
